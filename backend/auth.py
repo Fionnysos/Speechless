@@ -13,4 +13,4 @@ def verify_password(password, hashed_password) -> bool:
         print("The password is incorrect!")
         return False
 
-verify_password("test123".encode("utf-8"), hash_password("test123").encode("utf-8"))
+# verify_password("test123".encode("utf-8"), hash_password("test123").encode("utf-8"))
