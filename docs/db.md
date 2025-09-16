@@ -13,13 +13,40 @@
 ---
 
 ### sessions
-| Column        | Type       | Constraints                | Description                  |
-|---------------|------------|----------------------------|------------------------------|
-| id            | INTEGER PK | AUTOINCREMENT              | Unique session ID            |
-| user_id       | INTEGER FK | NOT NULL → users.id        | Linked user                  |
-| session_token | TEXT       | UNIQUE, NOT NULL           | Random session tokeny        |
-| created_at    | TIMESTAMP  | NOT NULL, UTC              | Session creation timestamp   |
-| expires_at    | TIMESTAMP  | NOT NULL, UTC              | Session expiration timestamp |
+| Column        | Type       | Constraints                  | Description                                 |
+|---------------|------------|------------------------------|---------------------------------------------|
+| id            | INTEGER PK | AUTOINCREMENT                | Internal DB identifier                      |
+| user_id       | INTEGER FK | NOT NULL → users.id          | Linked user                                 |
+| session_token | TEXT       | UNIQUE, NOT NULL             | Random opaque token stored in cookie        |
+| created_at    | TIMESTAMP  | NOT NULL, UTC                | Session creation time                       |
+| last_seen_at  | TIMESTAMP  | NOT NULL, UTC                | Last activity (used for sliding TTL)        |
+| expires_at    | TIMESTAMP  | NOT NULL, UTC, INDEX         | Session expiration time                     |
+| revoked       | INTEGER    | NOT NULL, DEFAULT 0          | 0 = active, 1 = revoked by user/logout      |
+
+---
+
+### calls
+| Column       | Type       | Constraints         | Description                                                      |
+|--------------|------------|---------------------|------------------------------------------------------------------|
+| id           | INTEGER PK | AUTOINCREMENT       | Internal DB identifier                                           |
+| user_id      | INTEGER FK | NOT NULL → users.id | Initiating user                                                  |
+| status       | TEXT       | NOT NULL            | Call state (`created`, `dialing`, `connected`, `ended`, `error`) |
+| created_at   | TIMESTAMP  | NOT NULL, UTC       | When the call was created                                        |
+| connected_at | TIMESTAMP  | NULL, UTC           | When the call was connected (NULL if not yet connected)          |
+| ended_at     | TIMESTAMP  | NULL, UTC           | When the call ended (NULL if still active)                       |
+| provider_id  | TEXT       | OPTIONAL            | External provider reference (for real PSTN integration)          |
+
+---
+
+### utterances
+| Column     | Type       | Constraints         | Description                                                       |
+|------------|------------|---------------------|-------------------------------------------------------------------|
+| id         | INTEGER PK | AUTOINCREMENT       | Internal DB identifier                                            |
+| call_id    | INTEGER FK | NOT NULL → calls.id | Associated call                                                   |
+| direction  | TEXT       | NOT NULL            | `outbound_tts` (system speaking) or `inbound_stt` (remote speech) |
+| text       | TEXT       | NOT NULL            | Utterance text                                                    |
+| is_final   | INTEGER    | NOT NULL, DEFAULT 0 | 0 = partial, 1 = final (for STT results)                          |
+| created_at | TIMESTAMP  | NOT NULL, UTC       | When this utterance was created                                   |
 
 ---
 
