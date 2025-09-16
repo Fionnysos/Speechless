@@ -6,11 +6,9 @@ def hash_password(password: str) -> str:
     return hashed_password.decode("utf-8")
 
 def verify_password(password, hashed_password) -> bool:
-    if bcrypt.checkpw(password, hashed_password):
-        print("The passowrd is correct!")
+    if bcrypt.checkpw(password.encode("utf-8"), hashed_password.encode("utf-8")):
+        print("The password is correct!")
         return True
     else:
         print("The password is incorrect!")
         return False
-
-# verify_password("test123".encode("utf-8"), hash_password("test123").encode("utf-8"))
