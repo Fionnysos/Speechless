@@ -1,9 +1,8 @@
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
 from typing import Annotated, Any
-from backend import auth, db
-from datetime import datetime, timezone
-
+from backend import auth, db, exceptions
+from datetime import datetime
 
 class UserIn(BaseModel):
     username: Annotated[str, Field(min_length=3, max_length=32)]
@@ -22,7 +21,21 @@ async def root():
 @app.post("/register", response_model= UserOut)
 async def create_user(user: UserIn) -> Any:
     hashed_password = auth.hash_password(user.password)
-    now_utc = datetime.now().replace(microsecond=0)
+    created_at = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
     db.startup_database()
-    db.create_user_database(user.username, hashed_password, now_utc)
+    db.create_user_database(user.username, hashed_password, created_at)
     return user
+
+@app.post("/login", response_model=UserOut)
+async def login(user: UserIn) -> Any:
+    db.startup_database()
+    if user.username == db.get_user_by_username(user.username):
+        if auth.verify_password(user.password, db.get_password_by_username(user.username)):
+            db.create_session(user.username)
+            print("You are logged in!")
+        else:
+            exceptions.InvalidPasswordError("Wrong password")
+    else:
+        exceptions.UserNotFoundError("Username do not exist")
+    return user
+
