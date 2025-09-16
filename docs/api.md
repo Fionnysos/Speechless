@@ -1,10 +1,8 @@
 # API Documentation
 
-
-
-| Path / Method  | Description                 | Request (Input)                             | Response (Output)                                                                                                                       | Info                          |
-|----------------|-----------------------------|---------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------|-------------------------------|
-| POST /register | endpoint to a register form | Body: {"username": "...", "password","..."} | (201): user created, response-body: {"id": "...", "username": "..."}<br/>(400): wrong or missing input<br/>(409): username already used | -                             |
-| POST /login    | endpoint to a login form    | Body: {"username": "...", "password","..."} | set session cookie<br/>response-body: {"message": "login successful"}<br/>(401): wrong credentials                                      | sets session cookie           |
-| POST /logout   | endpoint to logout          | session cookie                              | (200): {"message", "logged out"}                                                                                                        | serverside session delete     |
-| GET  /me       | endpoint for identification | session cookie                              | (200): {"id" : ..., "username": "..."}<br/>(401): invalid cookie or no session                                                          | requires valid session cookie |
+| Path / Method  | Description                 | Request (Input)                                         | Response (Output)                                                                                                                                     | Info                   |
+|----------------|-----------------------------|---------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------|
+| POST /register | endpoint to register a user | JSON body: {"username": "string", "password": "string"} | 201 Created: {"id": number, "username": "string"} · 400 Bad Request: invalid/missing fields · 409 Conflict: username already in use                   | —                      |
+| POST /login    | endpoint to log in          | JSON body: {"username": "string", "password": "string"} | 200 OK: {"id": number, "username": "string"} + Set-Cookie: session=<token>; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=<secs> · 401 Unauthorized | sets session cookie    |
+| POST /logout   | endpoint to log out         | Session cookie `session`                                | 204 No Content + Set-Cookie: session=; Max-Age=0; HttpOnly; Secure; SameSite=Lax; Path=/ · 401 Unauthorized                                           | server-side revoke     |
+| GET  /me       | identify current user       | Session cookie `session`                                | 200 OK: {"id": number, "username": "string", "created_at": "ISO8601"} · 401 Unauthorized                                                              | requires valid session |
