@@ -1,4 +1,7 @@
 from datetime import datetime, timedelta
+
+import bcrypt
+
 from backend import exceptions
 import sqlite3
 import secrets
@@ -22,40 +25,28 @@ def create_user_database(username, hashed_password, created_at):
     conn.close()
     return "User created: (?,?)", (user_id, username)
 
-def get_user_by_username(username):
+def get_user(username, password):
     conn = startup_database()
-    user = conn.cursor().execute("SELECT id, username, password_hash FROM users WHERE username = ?", (username,)).fetchone()
+    user = conn.cursor().execute("SELECT id, username, password_hash, created_at FROM users WHERE username = ?", (username,)).fetchone()
     conn.close()
     if user is None:
         raise exceptions.UserNotFoundError("User not found")
     else:
-        return user[1]
+        if bcrypt.checkpw(password.encode("utf-8"), user["password_hash"].encode("utf-8")):
+            print("Login Successfully")
+            return user
+        else:
+            raise exceptions.InvalidPasswordError("Wrong Password!")
 
-def get_password_by_username(username):
+
+def create_session(username, password):
     conn = startup_database()
-    user = conn.cursor().execute("Select password_hash FROM users WHERE username = ?", (username,)).fetchone()
-    conn.close()
-    if user is None:
-        raise exceptions.UserNotFoundError("User not found")
-    else:
-        return user["password_hash"]
-
-def get_user_id_by_username(username):
-    conn = startup_database()
-    user = conn.cursor().execute("SELECT id FROM users WHERE username = ?", (username,)).fetchone()
-    conn.close()
-    if user is None:
-        raise exceptions.UserNotFoundError("User not found")
-    else:
-        return user[0]
-
-
-def create_session(username):
-    conn = startup_database()
+    db_user = get_user(username,password)
     token_str = secrets.token_urlsafe(64)
     created_at = datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
-    expires_at = datetime.now() + timedelta(days=7)
-    conn.cursor().execute("INSERT INTO sessions (user_id, session_token, created_at, last_seen_at, expires_at, revoked) VALUES (?,?,?,?,?,?)", (get_user_id_by_username(username), token_str, created_at, created_at, expires_at, 0))
+    expires_at_raw = datetime.now() + timedelta(days=7)
+    expires_at = expires_at_raw.strftime("%Y-%m-%dT%H:%M:%SZ")
+    conn.cursor().execute("INSERT INTO sessions (user_id, session_token, created_at, last_seen_at, expires_at) VALUES (?,?,?,?,?)", (db_user["id"], token_str, created_at, created_at, expires_at))
     conn.commit()
     conn.close()
     return token_str
