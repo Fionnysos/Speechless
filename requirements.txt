@@ -1,4 +1,6 @@
-fastapi
+fastapi~=0.116.1
 uvicorn
-bcrypt
+bcrypt~=4.3.0
 python-multipart
+
+pydantic~=2.11.7
