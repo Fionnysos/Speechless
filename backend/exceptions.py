@@ -9,3 +9,6 @@ class SessionExpiredError(Exception):
 
 class SessionRevokedError(Exception):
     pass
+
+class UserIDNotFound(Exception):
+    pass
