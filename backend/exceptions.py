@@ -12,3 +12,6 @@ class SessionRevokedError(Exception):
 
 class UserIDNotFound(Exception):
     pass
+
+class EmptyPasswordError(Exception):
+    pass
