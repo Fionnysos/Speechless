@@ -15,3 +15,6 @@ class UserIDNotFound(Exception):
 
 class EmptyPasswordError(Exception):
     pass
+
+class WrongPasswordError(Exception):
+    pass
