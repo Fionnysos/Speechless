@@ -33,7 +33,6 @@ def get_user(username, password):
         raise exceptions.UserNotFoundError("User not found")
     else:
         if bcrypt.checkpw(password.encode("utf-8"), user["password_hash"].encode("utf-8")):
-            print("Login Successfully")
             return user
         else:
             raise exceptions.InvalidPasswordError("Wrong Password!")
