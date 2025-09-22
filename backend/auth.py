@@ -15,4 +15,4 @@ def verify_password(password, hashed_password) -> bool:
         return True
     else:
         print("The password is incorrect!")
-        return False
+        raise exceptions.WrongPasswordError
