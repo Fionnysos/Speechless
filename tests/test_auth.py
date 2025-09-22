@@ -9,7 +9,7 @@ class TestHashPassword:
         result = backend.auth.hash_password(password)
         assert result != password
 
-    def test_is_string(self, password):
+    def test_output_is_string(self, password):
         result = backend.auth.hash_password(password)
         assert isinstance(result, str)
 
@@ -17,3 +17,10 @@ class TestHashPassword:
 def test_empty_string(password, expected):
     with pytest.raises(expected):
         backend.auth.hash_password(password)
+
+@pytest.mark.parametrize("password, hashed_password", [("test12345678", "$2b$12$LwCTz/h8D1GCFWLRRzcwbOnTSR88vi1A6fVz8tFxEuKuHX1eBcpE2")])
+class TestVerifyPassword:
+
+    def test_output_is_bool(self, password, hashed_password):
+        result = backend.auth.verify_password(password, hashed_password)
+        assert isinstance(result, bool)
