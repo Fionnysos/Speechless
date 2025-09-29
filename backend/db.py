@@ -37,7 +37,7 @@ def get_user(conn, username, password):
 
 
 def create_session(conn, username, password):
-    db_user = get_user(username,password)
+    db_user = get_user(conn, username, password)
     token_str = secrets.token_urlsafe(64)
     created_at = datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
     expires_at_raw = datetime.now() + timedelta(days=7)

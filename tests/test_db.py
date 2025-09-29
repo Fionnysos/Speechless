@@ -2,6 +2,7 @@ import sqlite3
 
 import pytest
 import backend.db
+import backend.auth
 
 @pytest.fixture()
 def startup_database():
@@ -46,6 +47,7 @@ def startup_database():
         FOREIGN KEY("sender_id") REFERENCES "users"("id"),
         CHECK(length(content) <= 2000)
     );
+    
     """)
     return conn
 
@@ -70,11 +72,16 @@ def test_user_creation_with_none(startup_database, username,hashed_password,crea
         backend.db.create_user_database(startup_database, username, hashed_password, created_at)
 
 # Sessions
-@pytest.mark.parametrize("username, password, created_at", [("testname", "test12345678", "2025-09-16T12:42:38Z")])
-def test_valid_session_creation(startup_database, username, password, created_at):
-    backend.db.create_session(startup_database, username, password)
-    row = startup_database.execute("SELECT * FROM sessions WHERE userID = ?", (username,)).fetchone()
-    assert row is not None
+@pytest.mark.parametrize("username, plain_password, created_at",[("testname", "test12345678", "2025-09-16T12:42:38Z")])
+def test_valid_session_creation(startup_database, username, plain_password, created_at):
+    hashed_pw = backend.auth.hash_password(plain_password)
+    backend.db.create_user_database(startup_database, username, hashed_pw, created_at)
+    backend.db.create_session(startup_database, username, plain_password)
+    user_row = startup_database.execute("SELECT id FROM users WHERE username = ?", (username,)).fetchone()
+    session_row = startup_database.execute("SELECT * FROM sessions WHERE user_id = ?", (user_row["id"],)).fetchone()
+    assert session_row is not None
+    assert session_row["user_id"] == user_row["id"]
+
 
 
 
