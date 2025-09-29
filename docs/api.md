@@ -1,0 +1,8 @@
+# API Documentation
+
+| Path / Method  | Description                 | Request (Input)                                         | Response (Output)                                                                                                                                     | Info                   |
+|----------------|-----------------------------|---------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------|
+| POST /register | endpoint to register a user | JSON body: {"username": "string", "password": "string"} | 201 Created: {"id": number, "username": "string"} · 400 Bad Request: invalid/missing fields · 409 Conflict: username already in use                   | —                      |
+| POST /login    | endpoint to log in          | JSON body: {"username": "string", "password": "string"} | 200 OK: {"id": number, "username": "string"} + Set-Cookie: session=<token>; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=<secs> · 401 Unauthorized | sets session cookie    |
+| POST /logout   | endpoint to log out         | Session cookie `session`                                | 204 No Content + Set-Cookie: session=; Max-Age=0; HttpOnly; Secure; SameSite=Lax; Path=/ · 401 Unauthorized                                           | server-side revoke     |
+| GET  /me       | identify current user       | Session cookie `session`                                | 200 OK: {"id": number, "username": "string", "created_at": "ISO8601"} · 401 Unauthorized                                                              | requires valid session |
